@@ -1,0 +1,32 @@
+body {
+    margin: 0;
+
+    height: 100vh;
+
+    display: grid;
+    grid-template: 
+        "header header" 100px
+        "aside main" 1fr /
+        300px 1fr;
+}
+
+header {
+    grid-area: header;
+
+    color: white;
+    background-color: #5b21b6;
+    padding: 5px 10px;
+}
+
+aside {
+    grid-area: aside;
+
+    background-color: #7c3aed;
+}
+
+main {
+    grid-area: main;
+
+    display: grid;
+    grid-auto-rows: 200px;
+}
