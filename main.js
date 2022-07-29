@@ -9,6 +9,8 @@ function importFromStorage(){
     } else {
         piecesOfWorkList = importedList;
     }
+    console.log("?");
+    piecesOfWorkList = piecesOfWorkList.map(object => Object.assign(new PieceOfWork(),object));
 }
 
 function saveToStorage(){
@@ -35,6 +37,7 @@ function addPieceOfWorkToLibrary(event){
     switch(workType){
         case "book":
             pieceOfWork = new PieceOfWork(title,creator,isCompleted);
+            console.log(pieceOfWork);
             break;
     }
 
@@ -49,7 +52,7 @@ function generateLibraryCollection(){
 
     piecesOfWorkList.forEach((work,index) => {
         const book = document.createElement("div");
-        book.classList.add('book');
+        book.classList.add('card','book');
         book.dataset.index = index;
 
         const title = document.createElement('div');
@@ -60,20 +63,25 @@ function generateLibraryCollection(){
         creator.classList.add('creator');
         creator.textContent = work.creator;
 
-        const isCompleted = document.createElement('div');
-        isCompleted.classList.add('is-completed');
-        isCompleted.textContent = work.isCompleted ? 'V' : 'X';
+        const completeButton = document.createElement('button');
+        completeButton.classList.add('is-completed');
+        completeButton.textContent = work.isCompleted ? 'V' : 'X';
+        completeButton.addEventListener('click',changePieceState);
 
-        book.append(title,creator,isCompleted);
+        book.append(title,creator,completeButton);
 
         container.append(book);
     })
 }
-/*<div class="book" data-index="0">
-                <div class="title">Mistrz i Małgorzata</div>
-                <div class="creator">Michaił Bułhakov</div>
-                <div class="is-completed">V</div>
-            </div>*/
+
+function changePieceState(event){
+    let index = event.target.closest('.card').dataset.index;
+    piecesOfWorkList[index].toggleCompletedState();
+
+    event.target.textContent = piecesOfWorkList[index].isCompleted ? 'V' : 'X';
+
+    saveToStorage();
+}
 
 importFromStorage();
 generateLibraryCollection();
