@@ -9,7 +9,6 @@ function importFromStorage(){
     } else {
         piecesOfWorkList = importedList;
     }
-    console.log("?");
     piecesOfWorkList = piecesOfWorkList.map(object => Object.assign(new PieceOfWork(),object));
 }
 
@@ -68,7 +67,12 @@ function generateLibraryCollection(){
         completeButton.textContent = work.isCompleted ? 'V' : 'X';
         completeButton.addEventListener('click',changePieceState);
 
-        book.append(title,creator,completeButton);
+        const deleteButton = document.createElement('button');
+        deleteButton.classList.add('delete');
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener('click',warnAboutDeletion);
+
+        book.append(title,creator,completeButton,deleteButton);
 
         container.append(book);
     })
@@ -83,7 +87,39 @@ function changePieceState(event){
     saveToStorage();
 }
 
+function warnAboutDeletion(event){
+    console.log("WarnAboutDeletion from: ");
+    console.log(event.target);
+    event.target.textContent = "Are you sure?"
+    
+    const func = tryToDelete.bind(event.target);
+    window.addEventListener('click',func,{once: true});
+
+    event.target.removeEventListener('click',warnAboutDeletion);
+
+    event.stopPropagation();
+}
+
+function tryToDelete(event){
+    console.log(this);
+    console.log(event.target);
+    if(this.isEqualNode(event.target)){
+        console.log("Delete");
+    } else {
+        this.textContent = "Delete";
+        this.addEventListener('click',warnAboutDeletion);
+    }
+}
+
 importFromStorage();
 generateLibraryCollection();
 
 document.querySelector("#addNewPieceOfWork").addEventListener('submit',addPieceOfWorkToLibrary);
+
+//document.querySelectorAll('div').forEach(div => div.addEventListener('click',test));
+
+function test(event){
+    console.log(event.target);
+    console.log(event.currentTarget);
+    console.log(this);
+}
