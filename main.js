@@ -70,7 +70,7 @@ function generateLibraryCollection(){
         const deleteButton = document.createElement('button');
         deleteButton.classList.add('delete');
         deleteButton.textContent = "Delete";
-        deleteButton.addEventListener('click',warnAboutDeletion);
+        deleteButton.addEventListener('click',warnAboutDeletion, {capture: true});
 
         book.append(title,creator,completeButton,deleteButton);
 
@@ -88,38 +88,41 @@ function changePieceState(event){
 }
 
 function warnAboutDeletion(event){
-    console.log("WarnAboutDeletion from: ");
-    console.log(event.target);
+
     event.target.textContent = "Are you sure?"
     
     const func = tryToDelete.bind(event.target);
-    window.addEventListener('click',func,{once: true});
+    window.addEventListener('click',func,{once: true, capture:true});
 
-    event.target.removeEventListener('click',warnAboutDeletion);
-
-    event.stopPropagation();
+    event.target.removeEventListener('click',warnAboutDeletion, {capture: true});
 }
 
 function tryToDelete(event){
-    console.log(this);
-    console.log(event.target);
+    
     if(this.isEqualNode(event.target)){
-        console.log("Delete");
+        deletePieceOfWork(event.target.closest('.card').dataset.index);
     } else {
         this.textContent = "Delete";
-        this.addEventListener('click',warnAboutDeletion);
+        this.addEventListener('click',warnAboutDeletion, {capture: true});
     }
+}
+
+function deletePieceOfWork(index){
+    piecesOfWorkList.splice(index,1);
+
+    saveToStorage();
+
+    refreshCollection();
+}
+
+function refreshCollection(){
+    const containers = document.querySelectorAll('.container');
+    containers.forEach(container => container.innerHTML = "");
+
+    generateLibraryCollection();
 }
 
 importFromStorage();
 generateLibraryCollection();
 
 document.querySelector("#addNewPieceOfWork").addEventListener('submit',addPieceOfWorkToLibrary);
-
-//document.querySelectorAll('div').forEach(div => div.addEventListener('click',test));
-
-function test(event){
-    console.log(event.target);
-    console.log(event.currentTarget);
-    console.log(this);
-}
