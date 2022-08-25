@@ -14,6 +14,38 @@ class PieceOfWork{
     }
 }
 
+class Book extends PieceOfWork{
+    static books;
+
+    constructor (title,creator,isCompleted,numberOfPages){
+        super(title,creator,isCompleted);
+
+        this.numberOfPages = numberOfPages;
+    }
+}
+
+class ComputerGame extends PieceOfWork {
+    static computerGames;
+
+    constructor (title,creator,isCompleted,hoursPlayed){
+        super(title,creator,isCompleted);
+
+        this.hoursPlayed = hoursPlayed;
+    }
+}
+
+class Movie extends PieceOfWork{
+
+    static movies;
+
+    constructor (title,creator,isCompleted,numberOfViewings,seenInCinema){
+        super(title,creator,isCompleted);
+
+        this.numberOfViewings = numberOfViewings;
+        this.seenInCinema = seenInCinema;
+    }
+}
+
 const storageController = (function(){
     const STORAGE_KEY = "piecesOfWork";
 
