@@ -1,128 +1,172 @@
 "use strict"
-const STORAGE_KEY = "piecesOfWork";
+
 let piecesOfWorkList = [];
 
-function importFromStorage(){
-    let importedList = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if(importedList === null || importedList === undefined){
-        piecesOfWorkList = [];
-    } else {
-        piecesOfWorkList = importedList;
+class PieceOfWork{
+    constructor (title,creator,isCompleted){
+        this.title = title;
+        this.creator = creator;
+        this.isCompleted = isCompleted;
     }
-    piecesOfWorkList = piecesOfWorkList.map(object => Object.assign(new PieceOfWork(),object));
+    
+    toggleCompletedState(){
+        this.isCompleted = !this.isCompleted;
+    }
 }
 
-function saveToStorage(){
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(piecesOfWorkList));
-}
+const storageController = (function(){
+    const STORAGE_KEY = "piecesOfWork";
 
-function PieceOfWork(title,creator,isCompleted){
-    this.title = title;
-    this.creator = creator;
-    this.isCompleted = isCompleted;
-}
-
-PieceOfWork.prototype.toggleCompletedState = function(){
-    this.isCompleted = !this.isCompleted;
-}
-
-function addPieceOfWorkToLibrary(event){
-    const workType = document.getElementById("type").value;
-    let pieceOfWork = null;
-
-    const title = document.getElementById("title").value;
-    const creator = document.getElementById('creator').value;
-    const isCompleted = document.getElementById('isCompleted').checked;
-    switch(workType){
-        case "book":
-            pieceOfWork = new PieceOfWork(title,creator,isCompleted);
-            console.log(pieceOfWork);
-            break;
+    function importFromStorage(){
+        let importedList = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if(importedList === null || importedList === undefined){
+            piecesOfWorkList = [];
+        } else {
+            piecesOfWorkList = importedList;
+        }
+        piecesOfWorkList = piecesOfWorkList.map(object => Object.assign(new PieceOfWork(),object));
     }
 
-    piecesOfWorkList.push(pieceOfWork);
-    saveToStorage();
 
-    event.preventDefault();
-}
+    function saveToStorage(){
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(piecesOfWorkList));
+    }
 
-function generateLibraryCollection(){
-    const container = document.querySelector(".container.books");
+    return {importFromStorage,saveToStorage};
+})();
 
-    piecesOfWorkList.forEach((work,index) => {
-        const book = document.createElement("div");
-        book.classList.add('card','book');
-        book.dataset.index = index;
+const mainController = (function(){
+    function init(){
+        storageController.importFromStorage();
+        assignListeners();
+        displayController.refreshCollection();
+    }
 
-        const title = document.createElement('div');
-        title.classList.add('title');
-        title.textContent = work.title;
+    function assignListeners(){
+        document.querySelector(".add-new-piece-of-work").addEventListener('submit',piecesOfWorkController.addPieceOfWorkToLibrary);
+    }
+
+    return {init};
+})();
+
+
+const piecesOfWorkController = (function(){
+    function addPieceOfWorkToLibrary(event){
+        event.preventDefault(); //To cancel form submition refreshing page
+    
+        let pieceOfWork = null;
+    
+        const {workType,title,creator,isCompleted} = displayController.getPieceOfWorkFormData();
         
-        const creator = document.createElement('div');
-        creator.classList.add('creator');
-        creator.textContent = work.creator;
-
-        const completeButton = document.createElement('button');
-        completeButton.classList.add('is-completed');
-        completeButton.textContent = work.isCompleted ? 'V' : 'X';
-        completeButton.addEventListener('click',changePieceState);
-
-        const deleteButton = document.createElement('button');
-        deleteButton.classList.add('delete');
-        deleteButton.textContent = "Delete";
-        deleteButton.addEventListener('click',warnAboutDeletion, {capture: true});
-
-        book.append(title,creator,completeButton,deleteButton);
-
-        container.append(book);
-    })
-}
-
-function changePieceState(event){
-    let index = event.target.closest('.card').dataset.index;
-    piecesOfWorkList[index].toggleCompletedState();
-
-    event.target.textContent = piecesOfWorkList[index].isCompleted ? 'V' : 'X';
-
-    saveToStorage();
-}
-
-function warnAboutDeletion(event){
-
-    event.target.textContent = "Are you sure?"
+        switch(workType){
+            case "book":
+                pieceOfWork = new PieceOfWork(title,creator,isCompleted);
+                console.log(pieceOfWork);
+                break;
+        }
     
-    const func = tryToDelete.bind(event.target);
-    window.addEventListener('click',func,{once: true, capture:true});
-
-    event.target.removeEventListener('click',warnAboutDeletion, {capture: true});
-}
-
-function tryToDelete(event){
-    
-    if(this.isEqualNode(event.target)){
-        deletePieceOfWork(event.target.closest('.card').dataset.index);
-    } else {
-        this.textContent = "Delete";
-        this.addEventListener('click',warnAboutDeletion, {capture: true});
+        piecesOfWorkList.push(pieceOfWork);
+        storageController.saveToStorage();
+        displayController.refreshCollection();
     }
-}
+    
+    function deletePieceOfWork(index){
+        piecesOfWorkList.splice(index,1);
+    
+        storageController.saveToStorage();
+    
+        displayController.refreshCollection();
+    }
 
-function deletePieceOfWork(index){
-    piecesOfWorkList.splice(index,1);
+    return {addPieceOfWorkToLibrary,deletePieceOfWork};
+})();
 
-    saveToStorage();
+const displayController = (function(){
 
-    refreshCollection();
-}
+    function changePieceState(event){
+        let index = event.target.closest('.card').dataset.index;
+        piecesOfWorkList[index].toggleCompletedState();
+    
+        event.target.textContent = piecesOfWorkList[index].isCompleted ? 'V' : 'X'; //TODO
+    
+        storageController.saveToStorage();
+    }
+    
 
-function refreshCollection(){
-    const containers = document.querySelectorAll('.container');
-    containers.forEach(container => container.innerHTML = "");
+    function generateLibraryCollection(){
+        const container = document.querySelector(".container.books");
+    
+        piecesOfWorkList.forEach((work,index) => {
+            const book = document.createElement("div");
+            book.classList.add('card','book');
+            book.dataset.index = index;
+    
+            const title = document.createElement('div');
+            title.classList.add('title');
+            title.textContent = work.title;
+            
+            const creator = document.createElement('div');
+            creator.classList.add('creator');
+            creator.textContent = work.creator;
+    
+            const completeButton = document.createElement('button');
+            completeButton.classList.add('mark-completed');
+            completeButton.textContent = work.isCompleted ? 'V' : 'X';
+            completeButton.addEventListener('click',changePieceState);
+    
+            const deleteButton = document.createElement('button');
+            deleteButton.classList.add('delete');
+            deleteButton.textContent = "Delete";
+            deleteButton.addEventListener('click',warnAboutDeletion, {capture: true});
+    
+            book.append(title,creator,completeButton,deleteButton);
+    
+            container.append(book);
+        })
+    }
 
-    generateLibraryCollection();
-}
+    function warnAboutDeletion(event){
 
-importFromStorage();
-generateLibraryCollection();
+        const deleteButton = event.target;
+    
+        deleteButton.textContent = "Are you sure?"
+        
+        const func = tryToDelete.bind(deleteButton);
+        window.addEventListener('click',func,{once: true, capture:true});
+    
+        deleteButton.removeEventListener('click',warnAboutDeletion, {capture: true});
+    }
+    
+    function tryToDelete(event){
+        const lastClickedDeleteButton = this;
+        const clickedElement = event.target;
+        
+        if(lastClickedDeleteButton.isEqualNode(clickedElement)){
+            piecesOfWorkController.deletePieceOfWork(lastClickedDeleteButton.closest('.card').dataset.index);
+        } else {
+            lastClickedDeleteButton.textContent = "Delete";
+            lastClickedDeleteButton.addEventListener('click',warnAboutDeletion, {capture: true});
+        }
+    }
+    
+    function refreshCollection(){
+        const containers = document.querySelectorAll('.container');
+        containers.forEach(container => container.innerHTML = "");
+    
+        generateLibraryCollection();
+    }
 
-document.querySelector("#addNewPieceOfWork").addEventListener('submit',addPieceOfWorkToLibrary);
+    function getPieceOfWorkFormData(){
+        const workType = document.getElementById("type").value;
+
+        const title = document.getElementById("title").value;
+        const creator = document.getElementById('creator').value;
+        const isCompleted = document.getElementById('is-completed').checked;
+
+        return {workType,title,creator,isCompleted};
+    }
+
+    return {refreshCollection,getPieceOfWorkFormData};
+})();
+
+mainController.init();
