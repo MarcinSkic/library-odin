@@ -1,7 +1,4 @@
 "use strict"
-
-let piecesOfWorkList = [];
-
 class PieceOfWork{
     constructor (title,creator,isCompleted){
         this.title = title;
@@ -15,7 +12,7 @@ class PieceOfWork{
 }
 
 class Book extends PieceOfWork{
-    static books;
+    static list  = [];
 
     constructor (title,creator,isCompleted,numberOfPages){
         super(title,creator,isCompleted);
@@ -24,19 +21,8 @@ class Book extends PieceOfWork{
     }
 }
 
-class ComputerGame extends PieceOfWork {
-    static computerGames;
-
-    constructor (title,creator,isCompleted,hoursPlayed){
-        super(title,creator,isCompleted);
-
-        this.hoursPlayed = hoursPlayed;
-    }
-}
-
 class Movie extends PieceOfWork{
-
-    static movies;
+    static list  = [];
 
     constructor (title,creator,isCompleted,numberOfViewings,seenInCinema){
         super(title,creator,isCompleted);
@@ -46,22 +32,34 @@ class Movie extends PieceOfWork{
     }
 }
 
+class ComputerGame extends PieceOfWork {
+    static list = [];
+
+    constructor (title,creator,isCompleted,hoursPlayed){
+        super(title,creator,isCompleted);
+
+        this.hoursPlayed = hoursPlayed;
+    }
+}
+
 const storageController = (function(){
     const STORAGE_KEY = "piecesOfWork";
 
     function importFromStorage(){
-        let importedList = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if(importedList === null || importedList === undefined){
-            piecesOfWorkList = [];
+        let importedLists = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+        if(importedLists === null || importedLists === undefined){
+            //NOTHING?
         } else {
-            piecesOfWorkList = importedList;
+            Book.list = importedLists.books.map(object => Object.assign(new Book(),object));
+            Movie.list = importedLists.movies.map(object => Object.assign(new Movie(),object));
+            ComputerGame.list = importedLists.computerGames.map(object => Object.assign(new ComputerGame(),object));
         }
-        piecesOfWorkList = piecesOfWorkList.map(object => Object.assign(new PieceOfWork(),object));
     }
 
-
     function saveToStorage(){
-        localStorage.setItem(STORAGE_KEY,JSON.stringify(piecesOfWorkList));
+        const piecesOfWork = {books: Book.list,movies: Movie.list,computerGames: ComputerGame.list}
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(piecesOfWork));
     }
 
     return {importFromStorage,saveToStorage};
@@ -83,6 +81,7 @@ const mainController = (function(){
 
 
 const piecesOfWorkController = (function(){
+
     function addPieceOfWorkToLibrary(event){
         event.preventDefault(); //To cancel form submition refreshing page
     
@@ -93,17 +92,16 @@ const piecesOfWorkController = (function(){
         switch(workType){
             case "book":
                 pieceOfWork = new PieceOfWork(title,creator,isCompleted);
-                console.log(pieceOfWork);
+                Book.list.push(pieceOfWork);
                 break;
         }
-    
-        piecesOfWorkList.push(pieceOfWork);
+        
         storageController.saveToStorage();
         displayController.refreshCollection();
     }
     
-    function deletePieceOfWork(index){
-        piecesOfWorkList.splice(index,1);
+    function deletePieceOfWork(index){  //TODO, probably should be in class?
+        Book.list.splice(index,1);  //VERY TEMP
     
         storageController.saveToStorage();
     
@@ -117,9 +115,9 @@ const displayController = (function(){
 
     function changePieceState(event){
         let index = event.target.closest('.card').dataset.index;
-        piecesOfWorkList[index].toggleCompletedState();
+        Book.list[index].toggleCompletedState();    //TODO, also should be encapsulated in class
     
-        event.target.textContent = piecesOfWorkList[index].isCompleted ? 'V' : 'X'; //TODO
+        event.target.textContent = Book.list[index].isCompleted ? 'V' : 'X'; //TODO
     
         storageController.saveToStorage();
     }
@@ -128,7 +126,7 @@ const displayController = (function(){
     function generateLibraryCollection(){
         const container = document.querySelector(".container.books");
     
-        piecesOfWorkList.forEach((work,index) => {
+        Book.list.forEach((work,index) => { //TODO temp
             const book = document.createElement("div");
             book.classList.add('card','book');
             book.dataset.index = index;
