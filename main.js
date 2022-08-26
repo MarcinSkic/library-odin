@@ -1,13 +1,23 @@
 "use strict"
 class PieceOfWork{
+
     constructor (title,creator,isCompleted){
         this.title = title;
         this.creator = creator;
         this.isCompleted = isCompleted;
     }
+
+    static deleteWorkFromList(index){
+        this.list.splice(index,1);
+    }
+    
+    static changeWorkState(index){
+        return this.list[index].toggleCompletedState();
+    }
     
     toggleCompletedState(){
         this.isCompleted = !this.isCompleted;
+        return this.isCompleted;
     }
 }
 
@@ -42,6 +52,20 @@ class ComputerGame extends PieceOfWork {
     }
 }
 
+const mainController = (function(){
+    function init(){
+        storageController.importFromStorage();
+        assignListeners();
+        displayController.refreshCollection();
+    }
+
+    function assignListeners(){
+        document.querySelector(".add-new-piece-of-work").addEventListener('submit',piecesOfWorkController.addPieceOfWorkToLibrary);
+    }
+
+    return {init};
+})();
+
 const storageController = (function(){
     const STORAGE_KEY = "piecesOfWork";
 
@@ -65,34 +89,17 @@ const storageController = (function(){
     return {importFromStorage,saveToStorage};
 })();
 
-const mainController = (function(){
-    function init(){
-        storageController.importFromStorage();
-        assignListeners();
-        displayController.refreshCollection();
-    }
-
-    function assignListeners(){
-        document.querySelector(".add-new-piece-of-work").addEventListener('submit',piecesOfWorkController.addPieceOfWorkToLibrary);
-    }
-
-    return {init};
-})();
-
-
 const piecesOfWorkController = (function(){
 
     function addPieceOfWorkToLibrary(event){
         event.preventDefault(); //To cancel form submition refreshing page
     
-        let pieceOfWork = null;
-    
         const {workType,title,creator,isCompleted} = displayController.getPieceOfWorkFormData();
         
         switch(workType){
             case "book":
-                pieceOfWork = new PieceOfWork(title,creator,isCompleted);
-                Book.list.push(pieceOfWork);
+                const book = new Book(title,creator,isCompleted,0);
+                Book.list.push(book);
                 break;
         }
         
@@ -100,8 +107,9 @@ const piecesOfWorkController = (function(){
         displayController.refreshCollection();
     }
     
-    function deletePieceOfWork(index){  //TODO, probably should be in class?
-        Book.list.splice(index,1);  //VERY TEMP
+    function deletePieceOfWork(pieceOfWorkClass,index){  //TODO, probably should be in class?
+
+        pieceOfWorkClass.deleteWorkFromList(index);
     
         storageController.saveToStorage();
     
@@ -113,11 +121,17 @@ const piecesOfWorkController = (function(){
 
 const displayController = (function(){
 
-    function changePieceState(event){
-        let index = event.target.closest('.card').dataset.index;
-        Book.list[index].toggleCompletedState();    //TODO, also should be encapsulated in class
+    const DOM_CLASS_INDEX_IN_CLASSLIST = 1;
+
+    function changeWorkState(event){
+        const pieceOfWorkElement = event.target.closest('.card');
+
+        const index = pieceOfWorkElement.dataset.index;
+        const pieceOfWorkClass = parseNodeClass(pieceOfWorkElement.classList[DOM_CLASS_INDEX_IN_CLASSLIST]) ;
+
+        const newState = pieceOfWorkClass.changeWorkState(index);
     
-        event.target.textContent = Book.list[index].isCompleted ? 'V' : 'X'; //TODO
+        event.target.textContent = newState ? 'V' : 'X'; //TODO
     
         storageController.saveToStorage();
     }
@@ -127,32 +141,38 @@ const displayController = (function(){
         const container = document.querySelector(".container.books");
     
         Book.list.forEach((work,index) => { //TODO temp
-            const book = document.createElement("div");
-            book.classList.add('card','book');
-            book.dataset.index = index;
-    
-            const title = document.createElement('div');
-            title.classList.add('title');
-            title.textContent = work.title;
+            const book = createSharedWorkElements(work,index,'book');
             
-            const creator = document.createElement('div');
-            creator.classList.add('creator');
-            creator.textContent = work.creator;
-    
-            const completeButton = document.createElement('button');
-            completeButton.classList.add('mark-completed');
-            completeButton.textContent = work.isCompleted ? 'V' : 'X';
-            completeButton.addEventListener('click',changePieceState);
-    
-            const deleteButton = document.createElement('button');
-            deleteButton.classList.add('delete');
-            deleteButton.textContent = "Delete";
-            deleteButton.addEventListener('click',warnAboutDeletion, {capture: true});
-    
-            book.append(title,creator,completeButton,deleteButton);
-    
             container.append(book);
         })
+    }
+
+    function createSharedWorkElements(work,index,workStringClass){
+        const workElement = document.createElement("div");
+        workElement.classList.add('card',workStringClass);
+        workElement.dataset.index = index;
+
+        const title = document.createElement('div');
+        title.classList.add('title');
+        title.textContent = work.title;
+        
+        const creator = document.createElement('div');
+        creator.classList.add('creator');
+        creator.textContent = work.creator;
+
+        const completeButton = document.createElement('button');
+        completeButton.classList.add('mark-completed');
+        completeButton.textContent = work.isCompleted ? 'V' : 'X';
+        completeButton.addEventListener('click',changeWorkState);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.classList.add('delete');
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener('click',warnAboutDeletion, {capture: true});
+
+        workElement.append(title,creator,completeButton,deleteButton);
+
+        return workElement;
     }
 
     function warnAboutDeletion(event){
@@ -172,7 +192,10 @@ const displayController = (function(){
         const clickedElement = event.target;
         
         if(lastClickedDeleteButton.isEqualNode(clickedElement)){
-            piecesOfWorkController.deletePieceOfWork(lastClickedDeleteButton.closest('.card').dataset.index);
+            const pieceOfWorkClass = parseNodeClass(lastClickedDeleteButton.closest('.card').classList[DOM_CLASS_INDEX_IN_CLASSLIST]);
+            const index = lastClickedDeleteButton.closest('.card').dataset.index;
+
+            piecesOfWorkController.deletePieceOfWork(pieceOfWorkClass,index);
         } else {
             lastClickedDeleteButton.textContent = "Delete";
             lastClickedDeleteButton.addEventListener('click',warnAboutDeletion, {capture: true});
@@ -194,6 +217,17 @@ const displayController = (function(){
         const isCompleted = document.getElementById('is-completed').checked;
 
         return {workType,title,creator,isCompleted};
+    }
+
+    function parseNodeClass(stringClass){
+        switch(stringClass){
+            case 'book':
+                return Book;
+            case 'movie':
+                return Movie;
+            case 'computer-game':
+                return ComputerGame;
+        }
     }
 
     return {refreshCollection,getPieceOfWorkFormData};
