@@ -61,6 +61,7 @@ const mainController = (function(){
 
     function assignListeners(){
         document.querySelector(".add-new-piece-of-work").addEventListener('submit',piecesOfWorkController.addPieceOfWorkToLibrary);
+        document.querySelectorAll('.pick-type').forEach(button => button.addEventListener('click',displayController.generateWorkTypeForm));
     }
 
     return {init};
@@ -123,6 +124,31 @@ const displayController = (function(){
 
     const DOM_CLASS_INDEX_IN_CLASSLIST = 1;
 
+    const WORK_FORM_FRAMEWORK = `
+    <form class="add-new-piece-of-work" action="#">
+        <div>
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title">
+        </div>
+        <div>
+            <label for="creator">Creator</label>
+            <input type="text" id="creator" name="creator" placeholder="Author, director or developer">
+        </div>
+        <div>
+            <label for="is-completed">Completed</label>
+            <input type="checkbox" name="is-completed" id="is-completed">
+        </div>
+    </form>`;
+
+    function generateWorkTypeForm(event){
+        const formContainer = document.querySelector('.form-container');
+        formContainer.innerHTML = "";
+
+        const form = stringToNode(WORK_FORM_FRAMEWORK);
+
+        formContainer.append(form);
+    }
+
     function changeWorkState(event){
         const pieceOfWorkElement = event.target.closest('.card');
 
@@ -141,13 +167,21 @@ const displayController = (function(){
         const container = document.querySelector(".container.books");
     
         Book.list.forEach((work,index) => { //TODO temp
-            const book = createSharedWorkElements(work,index,'book');
+            const book = createPieceOfWorkFrameworkElement(work,index,'book');
+
+            const numberOfPages = document.createElement('div');
+            numberOfPages.classList.add('number-of-pages');
+            numberOfPages.textContent = work.numberOfPages;
+
+            book.append(numberOfPages);
+            
+            addButtonsToPieceOfWork(work,book);
             
             container.append(book);
         })
     }
 
-    function createSharedWorkElements(work,index,workStringClass){
+    function createPieceOfWorkFrameworkElement(work,index,workStringClass){
         const workElement = document.createElement("div");
         workElement.classList.add('card',workStringClass);
         workElement.dataset.index = index;
@@ -160,6 +194,13 @@ const displayController = (function(){
         creator.classList.add('creator');
         creator.textContent = work.creator;
 
+        workElement.append(title,creator);
+
+        return workElement;
+    }
+
+    function addButtonsToPieceOfWork(work,workElement){
+
         const completeButton = document.createElement('button');
         completeButton.classList.add('mark-completed');
         completeButton.textContent = work.isCompleted ? 'V' : 'X';
@@ -170,9 +211,7 @@ const displayController = (function(){
         deleteButton.textContent = "Delete";
         deleteButton.addEventListener('click',warnAboutDeletion, {capture: true});
 
-        workElement.append(title,creator,completeButton,deleteButton);
-
-        return workElement;
+        workElement.append(completeButton,deleteButton);
     }
 
     function warnAboutDeletion(event){
@@ -219,6 +258,25 @@ const displayController = (function(){
         return {workType,title,creator,isCompleted};
     }
 
+    function getBookFormData(){
+
+    }
+
+    function getMovieFormData(){
+
+    }
+
+    function getComputerGameFormData(){
+
+    }
+
+    const stringToNode = function(string){
+        const template = document.createElement('template');
+        string = string.trim();
+        template.innerHTML = string;
+        return template.content.firstChild;
+    }
+
     function parseNodeClass(stringClass){
         switch(stringClass){
             case 'book':
@@ -230,7 +288,7 @@ const displayController = (function(){
         }
     }
 
-    return {refreshCollection,getPieceOfWorkFormData};
+    return {refreshCollection,getPieceOfWorkFormData,generateWorkTypeForm};
 })();
 
 mainController.init();

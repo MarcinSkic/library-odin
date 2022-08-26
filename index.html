@@ -14,28 +14,32 @@
     </header>
     <aside>
         <h2>Add new piece of work</h2>
-        <form class="add-new-piece-of-work" action="#">
-            <!--Add here pretty icons for book, movie and game. Select is temporary-->
-            <div>
-                <label for="type">Type</label>
-                <select name="type" id="type">
-                    <option value="book">Book</option>
-                </select>
-            </div>  
-            <div>
-                <label for="title">Title</label>
-                <input type="text" id="title" name="title">
-            </div>
-            <div>
-                <label for="creator">Creator</label>
-                <input type="text" id="creator" name="creator" placeholder="Author, director or developer">
-            </div>
-            <div>
-                <label for="is-completed">Completed</label>
-                <input type="checkbox" name="is-completed" id="is-completed">
-            </div>          
-            <button type="submit">Add to collection</button>
-        </form>
+        <div>
+            <button class="pick-type" value="book" type="button">Book</button>
+            <button class="pick-type" value="movie" type="button">Movie</button>
+            <button class="pick-type" value="computer-game" type="button">Computer Game</button>
+        </div>
+        <div class="form-container">
+            <form class="add-new-piece-of-work" action="#">
+                <div>
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title">
+                </div>
+                <div>
+                    <label for="creator">Creator</label>
+                    <input type="text" id="creator" name="creator" placeholder="Author, director or developer">
+                </div>
+                <div>
+                    <label for="is-completed">Completed</label>
+                    <input type="checkbox" name="is-completed" id="is-completed">
+                </div>
+                <div>
+                    <label for="number-of-pages">Number of pages</label>
+                    <input type="number" min="0" name="number-of-pages" id="number-of-pages">
+                </div>
+                <button type="submit" value="book">Add to collection</button>
+            </form>
+        </div>
     </aside>
     <main>
         <div class="container books">
