@@ -46,3 +46,24 @@ main {
 
     border-radius: 5px;
 }
+
+.rating-bar {
+    display: flex;
+    flex-direction: row-reverse;
+    width: min-content;
+}
+
+.star {
+    color: white;
+}
+
+.star.selected ~ .star,
+.star:hover ~ .star{
+    color: #FBC02D;
+}
+
+.star.selected,
+.star:hover{
+    color: #FBC02D;
+}
+
