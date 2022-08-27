@@ -55,12 +55,13 @@ class ComputerGame extends PieceOfWork {
 const mainController = (function(){
     function init(){
         storageController.importFromStorage();
-        assignListeners();
+        displayController.generateWorkTypeForm({target: {value: "book"}});
         displayController.refreshCollection();
+
+        assignListeners();
     }
 
     function assignListeners(){
-        document.querySelector(".add-new-piece-of-work").addEventListener('submit',piecesOfWorkController.addPieceOfWorkToLibrary);
         document.querySelectorAll('.pick-type').forEach(button => button.addEventListener('click',displayController.generateWorkTypeForm));
     }
 
@@ -94,13 +95,25 @@ const piecesOfWorkController = (function(){
 
     function addPieceOfWorkToLibrary(event){
         event.preventDefault(); //To cancel form submition refreshing page
+        const workType = event.target.dataset.type;
     
-        const {workType,title,creator,isCompleted} = displayController.getPieceOfWorkFormData();
+        const {title,creator,isCompleted} = displayController.getPieceOfWorkFormData();
         
         switch(workType){
             case "book":
-                const book = new Book(title,creator,isCompleted,0);
-                Book.list.push(book);
+                const {numberOfPages} = displayController.getBookFormData();
+
+                Book.list.push(new Book(title,creator,isCompleted,numberOfPages));
+                break;
+            case 'movie':
+                const {numberOfViewings,seenInCinema} = displayController.getMovieFormData();
+
+                Movie.list.push(new Movie(title,creator,isCompleted,numberOfViewings,seenInCinema));
+                break;
+            case 'computer-game':
+                const {hoursPlayed} = displayController.getComputerGameFormData();
+
+                ComputerGame.list.push(new ComputerGame(title,creator,isCompleted,hoursPlayed));
                 break;
         }
         
@@ -140,11 +153,56 @@ const displayController = (function(){
         </div>
     </form>`;
 
+    const BOOK_FORM_EXTRA = `
+    <div>
+        <label for="number-of-pages">Number of pages</label>
+        <input type="number" min="0" name="number-of-pages" id="number-of-pages">
+    </div>`
+
+    const MOVIE_FORM_EXTRA = `
+    <div>
+        <label for="number-of-viewings">Number of viewings</label>
+        <input type="number" min="0" name="number-of-viewings" id="number-of-viewings">
+    </div>
+    <div>
+        <label for="seen-in-cinema">Seen in cinema</label>
+        <input type="checkbox" name="seen-in-cinema" id="seen-in-cinema">
+    </div>
+    `
+
+    const COMPUTER_GAME_FORM_EXTRA = `
+    <div>
+        <label for="hours-played">Hours played</label>
+        <input type="number" min="0" name="hours-played" id="hours-played">
+    </div>`
+
     function generateWorkTypeForm(event){
+        const workType = event.target.value;
+
         const formContainer = document.querySelector('.form-container');
         formContainer.innerHTML = "";
 
-        const form = stringToNode(WORK_FORM_FRAMEWORK);
+        const form = stringToNode(WORK_FORM_FRAMEWORK)[0];
+        form.dataset.type = workType;
+        form.addEventListener('submit',piecesOfWorkController.addPieceOfWorkToLibrary);
+
+        switch(workType){
+            case 'book':
+                form.append(...stringToNode(BOOK_FORM_EXTRA));
+                break;
+            case 'movie':
+                form.append(...stringToNode(MOVIE_FORM_EXTRA));
+                break;
+            case 'computer-game':
+                form.append(...stringToNode(COMPUTER_GAME_FORM_EXTRA));
+                break;
+        }
+
+        const submitButton = document.createElement('button');
+        submitButton.type = 'submit';
+        submitButton.textContent = "Add to collection";
+
+        form.append(submitButton);
 
         formContainer.append(form);
     }
@@ -249,32 +307,38 @@ const displayController = (function(){
     }
 
     function getPieceOfWorkFormData(){
-        const workType = document.getElementById("type").value;
 
         const title = document.getElementById("title").value;
         const creator = document.getElementById('creator').value;
         const isCompleted = document.getElementById('is-completed').checked;
 
-        return {workType,title,creator,isCompleted};
+        return {title,creator,isCompleted};
     }
 
     function getBookFormData(){
+        const numberOfPages = document.getElementById('number-of-pages').value;
 
+        return {numberOfPages};
     }
 
     function getMovieFormData(){
-
+        const numberOfViewings = document.getElementById('number-of-viewings').value;
+        const seenInCinema = document.getElementById('seen-in-cinema').checked;
+        
+        return {numberOfViewings,seenInCinema};
     }
 
     function getComputerGameFormData(){
+        const hoursPlayed = document.getElementById('hours-played').value;
 
+        return {hoursPlayed};
     }
 
     const stringToNode = function(string){
         const template = document.createElement('template');
         string = string.trim();
         template.innerHTML = string;
-        return template.content.firstChild;
+        return template.content.childNodes;
     }
 
     function parseNodeClass(stringClass){
@@ -288,7 +352,7 @@ const displayController = (function(){
         }
     }
 
-    return {refreshCollection,getPieceOfWorkFormData,generateWorkTypeForm};
+    return {refreshCollection,generateWorkTypeForm,getPieceOfWorkFormData,getBookFormData,getMovieFormData,getComputerGameFormData};
 })();
 
 mainController.init();
