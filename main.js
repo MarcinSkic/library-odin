@@ -222,7 +222,7 @@ const displayController = (function(){
     
 
     function generateLibraryCollection(){
-        const container = document.querySelector(".container.books");
+        const booksContainer = document.querySelector(".container.books");
     
         Book.list.forEach((work,index) => { //TODO temp
             const book = createPieceOfWorkFrameworkElement(work,index,'book');
@@ -235,9 +235,46 @@ const displayController = (function(){
             
             addButtonsToPieceOfWork(work,book);
             
-            container.append(book);
-        })
-    }
+            booksContainer.append(book);
+        });
+
+        const moviesContainer = document.querySelector('.container.movies');
+
+        Movie.list.forEach((work,index) => {
+            const movie = createPieceOfWorkFrameworkElement(work,index,'movie');
+
+            const numberOfViewings = document.createElement('div');
+            numberOfViewings.classList.add('number-of-viewings');
+            numberOfViewings.textContent = work.numberOfViewings;
+
+            const seenInCinema = document.createElement('div');
+            seenInCinema.classList.add('seen-in-cinema');
+            seenInCinema.textContent = `Seen in cinema: ${work.seenInCinema ? 'V' : 'X'}`;
+
+            movie.append(numberOfViewings,seenInCinema);
+
+            addButtonsToPieceOfWork(work,movie);
+
+            moviesContainer.append(movie);
+        });
+
+        const computerGamesContainer = document.querySelector('.container.computer-games');
+
+        ComputerGame.list.forEach((work,index) => {
+            const computerGame = createPieceOfWorkFrameworkElement(work,index,'computer-game');
+
+            const hoursPlayed = document.createElement('div');
+            hoursPlayed.classList.add('hours-played');
+            hoursPlayed.textContent = work.hoursPlayed;
+
+            computerGame.append(hoursPlayed);
+
+            addButtonsToPieceOfWork(work,computerGame);
+
+            computerGamesContainer.append(computerGame);
+        });
+        
+    } 
 
     function createPieceOfWorkFrameworkElement(work,index,workStringClass){
         const workElement = document.createElement("div");
