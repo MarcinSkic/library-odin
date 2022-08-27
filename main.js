@@ -1,77 +1,129 @@
 "use strict"
-
-let piecesOfWorkList = [];
-
 class PieceOfWork{
+
     constructor (title,creator,isCompleted){
         this.title = title;
         this.creator = creator;
         this.isCompleted = isCompleted;
     }
+
+    static deleteWorkFromList(index){
+        this.list.splice(index,1);
+    }
+    
+    static changeWorkState(index){
+        return this.list[index].toggleCompletedState();
+    }
     
     toggleCompletedState(){
         this.isCompleted = !this.isCompleted;
+        return this.isCompleted;
     }
 }
 
-const storageController = (function(){
-    const STORAGE_KEY = "piecesOfWork";
+class Book extends PieceOfWork{
+    static list  = [];
 
-    function importFromStorage(){
-        let importedList = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if(importedList === null || importedList === undefined){
-            piecesOfWorkList = [];
-        } else {
-            piecesOfWorkList = importedList;
-        }
-        piecesOfWorkList = piecesOfWorkList.map(object => Object.assign(new PieceOfWork(),object));
+    constructor (title,creator,isCompleted,numberOfPages){
+        super(title,creator,isCompleted);
+
+        this.numberOfPages = numberOfPages;
     }
+}
 
+class Movie extends PieceOfWork{
+    static list  = [];
 
-    function saveToStorage(){
-        localStorage.setItem(STORAGE_KEY,JSON.stringify(piecesOfWorkList));
+    constructor (title,creator,isCompleted,numberOfViewings,seenInCinema){
+        super(title,creator,isCompleted);
+
+        this.numberOfViewings = numberOfViewings;
+        this.seenInCinema = seenInCinema;
     }
+}
 
-    return {importFromStorage,saveToStorage};
-})();
+class ComputerGame extends PieceOfWork {
+    static list = [];
+
+    constructor (title,creator,isCompleted,hoursPlayed){
+        super(title,creator,isCompleted);
+
+        this.hoursPlayed = hoursPlayed;
+    }
+}
 
 const mainController = (function(){
     function init(){
         storageController.importFromStorage();
-        assignListeners();
+        displayController.generateWorkTypeForm({target: {value: "book"}});
         displayController.refreshCollection();
+
+        assignListeners();
     }
 
     function assignListeners(){
-        document.querySelector(".add-new-piece-of-work").addEventListener('submit',piecesOfWorkController.addPieceOfWorkToLibrary);
+        document.querySelectorAll('.pick-type').forEach(button => button.addEventListener('click',displayController.generateWorkTypeForm));
     }
 
     return {init};
 })();
 
+const storageController = (function(){
+    const STORAGE_KEY = "piecesOfWork";
+
+    function importFromStorage(){
+        let importedLists = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+        if(importedLists === null || importedLists === undefined){
+            //NOTHING?
+        } else {
+            Book.list = importedLists.books.map(object => Object.assign(new Book(),object));
+            Movie.list = importedLists.movies.map(object => Object.assign(new Movie(),object));
+            ComputerGame.list = importedLists.computerGames.map(object => Object.assign(new ComputerGame(),object));
+        }
+    }
+
+    function saveToStorage(){
+        const piecesOfWork = {books: Book.list,movies: Movie.list,computerGames: ComputerGame.list}
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(piecesOfWork));
+    }
+
+    return {importFromStorage,saveToStorage};
+})();
 
 const piecesOfWorkController = (function(){
+
     function addPieceOfWorkToLibrary(event){
         event.preventDefault(); //To cancel form submition refreshing page
+        const workType = event.target.dataset.type;
     
-        let pieceOfWork = null;
-    
-        const {workType,title,creator,isCompleted} = displayController.getPieceOfWorkFormData();
+        const {title,creator,isCompleted} = displayController.getPieceOfWorkFormData();
         
         switch(workType){
             case "book":
-                pieceOfWork = new PieceOfWork(title,creator,isCompleted);
-                console.log(pieceOfWork);
+                const {numberOfPages} = displayController.getBookFormData();
+
+                Book.list.push(new Book(title,creator,isCompleted,numberOfPages));
+                break;
+            case 'movie':
+                const {numberOfViewings,seenInCinema} = displayController.getMovieFormData();
+
+                Movie.list.push(new Movie(title,creator,isCompleted,numberOfViewings,seenInCinema));
+                break;
+            case 'computer-game':
+                const {hoursPlayed} = displayController.getComputerGameFormData();
+
+                ComputerGame.list.push(new ComputerGame(title,creator,isCompleted,hoursPlayed));
                 break;
         }
-    
-        piecesOfWorkList.push(pieceOfWork);
+        
         storageController.saveToStorage();
         displayController.refreshCollection();
     }
     
-    function deletePieceOfWork(index){
-        piecesOfWorkList.splice(index,1);
+    function deletePieceOfWork(pieceOfWorkClass,index){  //TODO, probably should be in class?
+
+        pieceOfWorkClass.deleteWorkFromList(index);
     
         storageController.saveToStorage();
     
@@ -83,46 +135,178 @@ const piecesOfWorkController = (function(){
 
 const displayController = (function(){
 
-    function changePieceState(event){
-        let index = event.target.closest('.card').dataset.index;
-        piecesOfWorkList[index].toggleCompletedState();
+    const DOM_CLASS_INDEX_IN_CLASSLIST = 1;
+
+    const WORK_FORM_FRAMEWORK = `
+    <form class="add-new-piece-of-work" action="#">
+        <div>
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title">
+        </div>
+        <div>
+            <label for="creator">Creator</label>
+            <input type="text" id="creator" name="creator" placeholder="Author, director or developer">
+        </div>
+        <div>
+            <label for="is-completed">Completed</label>
+            <input type="checkbox" name="is-completed" id="is-completed">
+        </div>
+    </form>`;
+
+    const BOOK_FORM_EXTRA = `
+    <div>
+        <label for="number-of-pages">Number of pages</label>
+        <input type="number" min="0" name="number-of-pages" id="number-of-pages">
+    </div>`
+
+    const MOVIE_FORM_EXTRA = `
+    <div>
+        <label for="number-of-viewings">Number of viewings</label>
+        <input type="number" min="0" name="number-of-viewings" id="number-of-viewings">
+    </div>
+    <div>
+        <label for="seen-in-cinema">Seen in cinema</label>
+        <input type="checkbox" name="seen-in-cinema" id="seen-in-cinema">
+    </div>
+    `
+
+    const COMPUTER_GAME_FORM_EXTRA = `
+    <div>
+        <label for="hours-played">Hours played</label>
+        <input type="number" min="0" name="hours-played" id="hours-played">
+    </div>`
+
+    function generateWorkTypeForm(event){
+        const workType = event.target.value;
+
+        const formContainer = document.querySelector('.form-container');
+        formContainer.innerHTML = "";
+
+        const form = stringToNode(WORK_FORM_FRAMEWORK)[0];
+        form.dataset.type = workType;
+        form.addEventListener('submit',piecesOfWorkController.addPieceOfWorkToLibrary);
+
+        switch(workType){
+            case 'book':
+                form.append(...stringToNode(BOOK_FORM_EXTRA));
+                break;
+            case 'movie':
+                form.append(...stringToNode(MOVIE_FORM_EXTRA));
+                break;
+            case 'computer-game':
+                form.append(...stringToNode(COMPUTER_GAME_FORM_EXTRA));
+                break;
+        }
+
+        const submitButton = document.createElement('button');
+        submitButton.type = 'submit';
+        submitButton.textContent = "Add to collection";
+
+        form.append(submitButton);
+
+        formContainer.append(form);
+    }
+
+    function changeWorkState(event){
+        const pieceOfWorkElement = event.target.closest('.card');
+
+        const index = pieceOfWorkElement.dataset.index;
+        const pieceOfWorkClass = parseNodeClass(pieceOfWorkElement.classList[DOM_CLASS_INDEX_IN_CLASSLIST]) ;
+
+        const newState = pieceOfWorkClass.changeWorkState(index);
     
-        event.target.textContent = piecesOfWorkList[index].isCompleted ? 'V' : 'X'; //TODO
+        event.target.textContent = newState ? 'V' : 'X'; //TODO
     
         storageController.saveToStorage();
     }
     
 
     function generateLibraryCollection(){
-        const container = document.querySelector(".container.books");
+        const booksContainer = document.querySelector(".container.books");
     
-        piecesOfWorkList.forEach((work,index) => {
-            const book = document.createElement("div");
-            book.classList.add('card','book');
-            book.dataset.index = index;
-    
-            const title = document.createElement('div');
-            title.classList.add('title');
-            title.textContent = work.title;
+        Book.list.forEach((work,index) => { //TODO temp
+            const book = createPieceOfWorkFrameworkElement(work,index,'book');
+
+            const numberOfPages = document.createElement('div');
+            numberOfPages.classList.add('number-of-pages');
+            numberOfPages.textContent = work.numberOfPages;
+
+            book.append(numberOfPages);
             
-            const creator = document.createElement('div');
-            creator.classList.add('creator');
-            creator.textContent = work.creator;
-    
-            const completeButton = document.createElement('button');
-            completeButton.classList.add('mark-completed');
-            completeButton.textContent = work.isCompleted ? 'V' : 'X';
-            completeButton.addEventListener('click',changePieceState);
-    
-            const deleteButton = document.createElement('button');
-            deleteButton.classList.add('delete');
-            deleteButton.textContent = "Delete";
-            deleteButton.addEventListener('click',warnAboutDeletion, {capture: true});
-    
-            book.append(title,creator,completeButton,deleteButton);
-    
-            container.append(book);
-        })
+            addButtonsToPieceOfWork(work,book);
+            
+            booksContainer.append(book);
+        });
+
+        const moviesContainer = document.querySelector('.container.movies');
+
+        Movie.list.forEach((work,index) => {
+            const movie = createPieceOfWorkFrameworkElement(work,index,'movie');
+
+            const numberOfViewings = document.createElement('div');
+            numberOfViewings.classList.add('number-of-viewings');
+            numberOfViewings.textContent = work.numberOfViewings;
+
+            const seenInCinema = document.createElement('div');
+            seenInCinema.classList.add('seen-in-cinema');
+            seenInCinema.textContent = `Seen in cinema: ${work.seenInCinema ? 'V' : 'X'}`;
+
+            movie.append(numberOfViewings,seenInCinema);
+
+            addButtonsToPieceOfWork(work,movie);
+
+            moviesContainer.append(movie);
+        });
+
+        const computerGamesContainer = document.querySelector('.container.computer-games');
+
+        ComputerGame.list.forEach((work,index) => {
+            const computerGame = createPieceOfWorkFrameworkElement(work,index,'computer-game');
+
+            const hoursPlayed = document.createElement('div');
+            hoursPlayed.classList.add('hours-played');
+            hoursPlayed.textContent = work.hoursPlayed;
+
+            computerGame.append(hoursPlayed);
+
+            addButtonsToPieceOfWork(work,computerGame);
+
+            computerGamesContainer.append(computerGame);
+        });
+        
+    } 
+
+    function createPieceOfWorkFrameworkElement(work,index,workStringClass){
+        const workElement = document.createElement("div");
+        workElement.classList.add('card',workStringClass);
+        workElement.dataset.index = index;
+
+        const title = document.createElement('div');
+        title.classList.add('title');
+        title.textContent = work.title;
+        
+        const creator = document.createElement('div');
+        creator.classList.add('creator');
+        creator.textContent = work.creator;
+
+        workElement.append(title,creator);
+
+        return workElement;
+    }
+
+    function addButtonsToPieceOfWork(work,workElement){
+
+        const completeButton = document.createElement('button');
+        completeButton.classList.add('mark-completed');
+        completeButton.textContent = work.isCompleted ? 'V' : 'X';
+        completeButton.addEventListener('click',changeWorkState);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.classList.add('delete');
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener('click',warnAboutDeletion, {capture: true});
+
+        workElement.append(completeButton,deleteButton);
     }
 
     function warnAboutDeletion(event){
@@ -142,7 +326,10 @@ const displayController = (function(){
         const clickedElement = event.target;
         
         if(lastClickedDeleteButton.isEqualNode(clickedElement)){
-            piecesOfWorkController.deletePieceOfWork(lastClickedDeleteButton.closest('.card').dataset.index);
+            const pieceOfWorkClass = parseNodeClass(lastClickedDeleteButton.closest('.card').classList[DOM_CLASS_INDEX_IN_CLASSLIST]);
+            const index = lastClickedDeleteButton.closest('.card').dataset.index;
+
+            piecesOfWorkController.deletePieceOfWork(pieceOfWorkClass,index);
         } else {
             lastClickedDeleteButton.textContent = "Delete";
             lastClickedDeleteButton.addEventListener('click',warnAboutDeletion, {capture: true});
@@ -157,16 +344,52 @@ const displayController = (function(){
     }
 
     function getPieceOfWorkFormData(){
-        const workType = document.getElementById("type").value;
 
         const title = document.getElementById("title").value;
         const creator = document.getElementById('creator').value;
         const isCompleted = document.getElementById('is-completed').checked;
 
-        return {workType,title,creator,isCompleted};
+        return {title,creator,isCompleted};
     }
 
-    return {refreshCollection,getPieceOfWorkFormData};
+    function getBookFormData(){
+        const numberOfPages = document.getElementById('number-of-pages').value;
+
+        return {numberOfPages};
+    }
+
+    function getMovieFormData(){
+        const numberOfViewings = document.getElementById('number-of-viewings').value;
+        const seenInCinema = document.getElementById('seen-in-cinema').checked;
+        
+        return {numberOfViewings,seenInCinema};
+    }
+
+    function getComputerGameFormData(){
+        const hoursPlayed = document.getElementById('hours-played').value;
+
+        return {hoursPlayed};
+    }
+
+    const stringToNode = function(string){
+        const template = document.createElement('template');
+        string = string.trim();
+        template.innerHTML = string;
+        return template.content.childNodes;
+    }
+
+    function parseNodeClass(stringClass){
+        switch(stringClass){
+            case 'book':
+                return Book;
+            case 'movie':
+                return Movie;
+            case 'computer-game':
+                return ComputerGame;
+        }
+    }
+
+    return {refreshCollection,generateWorkTypeForm,getPieceOfWorkFormData,getBookFormData,getMovieFormData,getComputerGameFormData};
 })();
 
 mainController.init();
