@@ -63,6 +63,7 @@ const mainController = (function(){
 
     function assignListeners(){
         document.querySelectorAll('.pick-type').forEach(button => button.addEventListener('click',displayController.generateWorkTypeForm));
+        document.querySelectorAll('.star').forEach(star => star.addEventListener('click',displayController.selectRating));
     }
 
     return {init};
@@ -389,7 +390,17 @@ const displayController = (function(){
         }
     }
 
-    return {refreshCollection,generateWorkTypeForm,getPieceOfWorkFormData,getBookFormData,getMovieFormData,getComputerGameFormData};
+    function selectRating(event){
+        const ratingBar = event.currentTarget.parentNode;
+
+        [...ratingBar.children].forEach(node => {
+            node.classList.remove('selected');
+        });
+
+        event.currentTarget.classList.add('selected');
+    }
+
+    return {refreshCollection,generateWorkTypeForm,getPieceOfWorkFormData,getBookFormData,getMovieFormData,getComputerGameFormData,selectRating};
 })();
 
 mainController.init();
