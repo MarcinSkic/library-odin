@@ -1,0 +1,32 @@
+{
+  "name": "library-odin",
+  "version": "0.2.0",
+  "description": "- Ability to add books with values: Title, Author and isCompleted ✔️ - Ability to change isCompleted status of existing book ✔️ - Ability to delete book from collection ✔️ ## Extra ### Functionality - More types of works: movies, games, etc. ✔️ - Ability to edit any value of work (probably as popup window) ❌ - Rating with stars ❌ - Sorting collections ❌ ### Visuals - Adding new work as popup instead of aside bar ❌ - Collection looking like shelf with backs or (more mainstream) frontcovers ❌ - Work expanding when hovering over its back (merge of both ideas above) ❌",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "watch": "webpack --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MarcinSkic/library-odin.git"
+  },
+  "author": "marcin_skic",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MarcinSkic/library-odin/issues"
+  },
+  "homepage": "https://github.com/MarcinSkic/library-odin#readme",
+  "devDependencies": {
+    "css-loader": "^6.7.1",
+    "html-webpack-plugin": "^5.5.0",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
+  },
+  "dependencies": {
+    "a11y-dialog": "^7.5.2",
+    "normalize.css": "^8.0.1"
+  }
+}

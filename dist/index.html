@@ -1,14 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <script src="main.js" defer></script>
-    <title>Library</title>
-</head>
+    <title>
+        Popculture Library
+    </title>
+<script defer src="main.js"></script></head>
+
 <body>
+    <div 
+    class="dialog-container" 
+    id="create-work-dialog" 
+    aria-hidden="true"
+    aria-labelledby="Add new work to library" >
+        <div class="dialog-overlay" data-a11y-dialog-hide></div>
+        <div class="dialog-content" role="document">
+            <button 
+            class="dialog-close"
+            type="button" 
+            data-a11y-dialog-hide 
+            aria-label="Close dialog">
+                &times;
+            </button>
+            <h1>Dialog</h1>
+        </div>
+    </div>
     <header>
         <h1>Popculture Library</h1>
     </header>
@@ -20,32 +39,37 @@
             <button class="pick-type" value="computer-game" type="button">Computer Game</button>
         </div>
         <div class="form-container">
-            
+
         </div>
         <div class="rating-bar">
             <div class="star" data-value="5">
                 <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
+                    <path fill="currentColor"
+                        d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
                 </svg>
             </div>
             <div class="star" data-value="4">
                 <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
+                    <path fill="currentColor"
+                        d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
                 </svg>
             </div>
             <div class="star" data-value="3">
                 <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
+                    <path fill="currentColor"
+                        d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
                 </svg>
             </div>
             <div class="star" data-value="2">
                 <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
+                    <path fill="currentColor"
+                        d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
                 </svg>
             </div>
             <div class="star" data-value="1">
                 <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
+                    <path fill="currentColor"
+                        d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
                 </svg>
             </div>
         </div>
@@ -56,4 +80,5 @@
         <div class="container computer-games"></div>
     </main>
 </body>
+
 </html>

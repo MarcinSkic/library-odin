@@ -67,3 +67,40 @@ main {
     color: #FBC02D;
 }
 
+.dialog-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    z-index: 2;
+}
+
+.dialog-container[aria-hidden="true"] {
+    display: none;
+}
+
+.dialog-overlay {
+    background-color: rgba(0, 0, 0, 0.712);
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.dialog-content {
+    background-color: #7c3aed;
+    position: relative;
+    z-index: 2;
+}
+
+.dialog-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+}

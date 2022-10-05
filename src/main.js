@@ -1,3 +1,6 @@
+import './style.css'
+import A11yDialog from 'a11y-dialog';
+
 "use strict"
 class PieceOfWork{
 
@@ -57,6 +60,7 @@ const mainController = (function(){
         storageController.importFromStorage();
         displayController.generateWorkTypeForm({target: {value: "book"}});
         displayController.refreshCollection();
+        displayController.initWorkPickDialog();
 
         assignListeners();
     }
@@ -176,6 +180,14 @@ const displayController = (function(){
         <label for="hours-played">Hours played</label>
         <input type="number" min="0" name="hours-played" id="hours-played">
     </div>`
+
+    function initWorkPickDialog(){
+        const dialogContainer = document.getElementById('create-work-dialog');
+        console.log(dialogContainer);
+        const dialog = new A11yDialog(dialogContainer);
+
+        dialog.show();
+    }
 
     function generateWorkTypeForm(event){
         const workType = event.target.value;
@@ -400,7 +412,7 @@ const displayController = (function(){
         event.currentTarget.classList.add('selected');
     }
 
-    return {refreshCollection,generateWorkTypeForm,getPieceOfWorkFormData,getBookFormData,getMovieFormData,getComputerGameFormData,selectRating};
+    return {refreshCollection,generateWorkTypeForm,getPieceOfWorkFormData,getBookFormData,getMovieFormData,getComputerGameFormData,initWorkPickDialog,selectRating};
 })();
 
 mainController.init();
