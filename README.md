@@ -19,8 +19,8 @@
 - Adding new work as popup instead of aside bar ❌
 - Collection looking like shelf with backs or (more mainstream) frontcovers ❌
 - Work expanding when hovering over its back (merge of both ideas above) ❌
-### [Project details <img align="left" alt="webpack" width="26px" src="https://user-images.githubusercontent.com/33003089/212971888-2bfa6490-1df1-40cf-97d1-998e3e801cd2.svg" style="padding-right:10px;"/>](https://www.theodinproject.com/lessons/node-path-javascript-library)
 ---
+[<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/MarcinSkic/marcinskic/main/icons/odin-dark.svg"><img align="right" alt="webpack" width="200px" src="https://raw.githubusercontent.com/MarcinSkic/marcinskic/main/icons/odin-light.svg" style="padding-right:10px;padding-top:10px;"/></picture>](https://www.theodinproject.com/lessons/node-path-javascript-library)
 ### Used technologies
 [<img align="left" alt="JS" width="26px" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" style="padding-right:10px;" />][js]
 [<img align="left" alt="SCSS" width="26px" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" style="padding-right:10px;"/>][html]
